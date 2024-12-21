@@ -4,31 +4,17 @@ import { useRef } from "react";
 import { useState } from "react";
 import { useCallback } from "react";
 
-const debounced = (mainFn, delay) => {
-  let timer;
-  let callCount = 0;
-  return function (...args) {
-    try {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        mainFn(...args, this.callCount++);
-      }, delay);
-    } catch (ex) {
-      console.error(ex);
-    }
-  };
-};
-
 const useDebounced = (mainFn, delay) => {
   const timer = useRef();
   const callCount = useRef(0);
 
-  return function (...args) {
+  const debouncedFn = useCallback((...args) => {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       mainFn(...args, ++callCount.current);
     }, delay);
-  };
+  });
+  return debouncedFn;
 };
 
 const someFn = (count, callCount) => {
@@ -37,7 +23,7 @@ const someFn = (count, callCount) => {
 
 export default function First() {
   const [state, setState] = useState(0);
-  const debouncedFn = useCallback(useDebounced(someFn, 500), []);
+  const debouncedFn = useDebounced(someFn, 500);
 
   return (
     <div>
