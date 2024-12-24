@@ -1,3 +1,73 @@
+// "use client";
+
+// import { useCallback, useRef } from "react";
+// import { Loglist } from "../components/Loglist";
+// import Title from "../components/Title";
+// import useWrite from "../hooks/useWrite";
+
+// const curry = <T extends unknown[]>(mainFn: (...args: T) => any) => {
+//   return function curried(...args: unknown[]) {
+//     if (args.length >= mainFn.length) {
+//       console.log("in if", args);
+//       return mainFn(...(args as T));
+//     } else {
+//       console.log("in else", args);
+//       return (...nextArgs: unknown[]) => curried(...args, ...nextArgs);
+//     }
+//   };
+// };
+
+// const totalNum = (a: number, b: number, c: number, d: number) => {
+//   return a + b + c + d;
+// };
+
+// const curriedTotal = curry(totalNum);
+
+// export default function Curry() {
+//   const { logText, write } = useWrite();
+//   const countRef = useRef(0);
+
+//   const getSimpleLogger = useCallback(() => {
+//     return (value: number) => {
+//       write(`output for input ${countRef.current++} is ${value}`);
+//     };
+//   }, [write]);
+
+//   const log = getSimpleLogger();
+
+//   const getStandardLogger = useCallback(
+//     (importance, date, message) => {
+//       write(`${importance} Log on Day ${date} message - ${message}`);
+//     },
+//     [write]
+//   );
+
+//   const curriedLog = curry(getStandardLogger);
+
+//   const severeLog = curriedLog("Severe");
+//   const infoLog = curriedLog("info");
+
+//   log(curriedTotal(10)(20)(30)(40));
+//   //   log(curriedTotal(10, 20)(30)(40));
+//   //   log(curriedTotal(10, 20)(30, 40));
+//   severeLog(new Date(), "This is a severe log");
+//   infoLog(new Date(), "This is an info log");
+
+//   return (
+//     <div>
+//       <Title title="Currying" />
+//       <Loglist list={logText} />
+//     </div>
+//   );
+// }
+
+"use client";
+
+import { useCallback, useRef } from "react";
+import { Loglist } from "../components/Loglist";
+import Title from "../components/Title";
+import useWrite from "../hooks/useWrite";
+
 const curry = <T extends unknown[]>(mainFn: (...args: T) => any) => {
   return function curried(...args: unknown[]) {
     if (args.length >= mainFn.length) {
@@ -16,33 +86,42 @@ const totalNum = (a: number, b: number, c: number, d: number) => {
 
 const curriedTotal = curry(totalNum);
 
-const getSimpleLogger = () => {
-  let count: number = 0;
-  return (value: number) => {
-    console.log(`output for input ${count++} is`, value);
-  };
-};
-
-const log = getSimpleLogger();
-
-const getStandardLogger = (importance, date, message) => {
-  console.log(`${importance} Log on Day ${date} message - ${message}`);
-};
-
-const curriedLog = curry(getStandardLogger);
-
-const severeLog = curriedLog("Severe");
-const infoLog = curriedLog("info");
-
 export default function Curry() {
-  log(curriedTotal(10)(20)(30)(40));
-  log(curriedTotal(10, 20)(30)(40));
-  log(curriedTotal(10, 20)(30, 40));
+  const { logText, write } = useWrite();
+  const countRef = useRef(0); // Use a ref to maintain count across renders
+
+  // Memoize the logger function
+  const log = useCallback(() => {
+    write(
+      `output for input ${countRef.current++} is ${curriedTotal(10)(20)(30)(
+        40
+      )}`
+    );
+  }, [write]);
+
+  const getStandardLogger = useCallback(
+    (importance: string, date: Date, message: string) => {
+      write(
+        `${importance} Log on Day ${date.toDateString()} message - ${message}`
+      );
+    },
+    [write]
+  );
+
+  const curriedLog = curry(getStandardLogger);
+
+  const severeLog = curriedLog("Severe");
+  const infoLog = curriedLog("Info");
+
+  // Log the results
+  log(); // Call the log function
   severeLog(new Date(), "This is a severe log");
   infoLog(new Date(), "This is an info log");
+
   return (
     <div>
-      <p>currying</p>
+      <Title title="Currying" />
+      <Loglist list={logText} />
     </div>
   );
 }
