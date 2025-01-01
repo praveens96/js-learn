@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Loglist } from "../components/Loglist";
 import Title from "../components/Title";
 import useWrite from "../hooks/useWrite";
@@ -51,9 +51,11 @@ export default function Curry() {
   const infoLog = curriedLog("Info");
 
   // Log the results
-  log(); // Call the log function
-  severeLog(new Date(), "This is a severe log");
-  infoLog(new Date(), "This is an info log");
+  // log(); // Call the log function
+  useEffect(() => {
+    severeLog(new Date(), "This is a severe log");
+    infoLog(new Date(), "This is an info log");
+  }, []);
 
   return (
     <div>
