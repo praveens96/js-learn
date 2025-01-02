@@ -7,35 +7,34 @@ import useWrite from "../hooks/useWrite";
 export interface NestedObject {
   [key: string]: NestedObject | object[] | number | string | boolean | null;
 }
-// function flattenObject(obj: NestedObject | object[]): Record<string, unknown> {
-//   const result: Record<string, unknown> = {};
-//   for (const key in obj) {
-//     const value = (obj as NestedObject)[key];
-//     if (typeof value === "object" && value !== null) {
-//       result[key] = flattenObject(value);
-//     } else {
-//       result[key] = value;
-//     }
-//   }
-//   console.log(result);
-//   return result;
-// }
-
-export function flattenObject(
-  obj: Record<string, any>,
-  parentKey = "",
-  result: Record<string, any> = {}
-): Record<string, any> {
+function flattenObject(obj: NestedObject | object[]): Record<string, unknown> {
+  let result: Record<string, unknown> = {};
   for (const key in obj) {
-    const newKey = parentKey ? `${parentKey}.${key}` : key;
-    if (
-      typeof obj[key] === "object" &&
-      obj[key] !== null &&
-      !Array.isArray(obj[key])
-    ) {
-      flattenObject(obj[key], newKey, result); // Recursively flatten nested objects
+    const value = (obj as NestedObject)[key];
+    if (typeof value === "object" && value !== null) {
+      result = { ...result, ...flattenObject(value) };
     } else {
-      result[newKey] = obj[key]; // Assign primitive values
+      result[key] = value;
+    }
+  }
+  console.log(result);
+  return result;
+}
+
+function flattenWithPrefix(
+  input: NestedObject | object[],
+  prefix = ""
+): Record<string, unknown> {
+  let result: Record<string, unknown> = {};
+  for (const key in input) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      const value = (input as NestedObject)[key];
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      if (typeof value === "object" && value !== null) {
+        result = { ...result, ...flattenWithPrefix(value, newKey) };
+      } else {
+        result[newKey] = value;
+      }
     }
   }
   return result;
@@ -56,12 +55,16 @@ export default function FlattenObject() {
     const res = flattenObject(obj);
     console.log(res);
     write(res);
+
+    const prefixRes = flattenWithPrefix(obj);
+    write(prefixRes);
   }, []);
+
   return (
     <div>
-      <Title title="Flatten Object" />
+      <Title title="Flatten Object & With Prefix" />
       {logText.map((line, index) => (
-        <span key={index}>{JSON.stringify(line)}</span>
+        <div key={index}>{JSON.stringify(line)}</div>
       ))}
     </div>
   );
