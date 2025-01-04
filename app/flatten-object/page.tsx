@@ -7,19 +7,6 @@ import useWrite from "../hooks/useWrite";
 export interface NestedObject {
   [key: string]: NestedObject | object[] | number | string | boolean | null;
 }
-// function flattenObject(obj: NestedObject | object[]): Record<string, unknown> {
-//   const result: Record<string, unknown> = {};
-//   for (const key in obj) {
-//     const value = (obj as NestedObject)[key];
-//     if (typeof value === "object" && value !== null) {
-//       result[key] = flattenObject(value);
-//     } else {
-//       result[key] = value;
-//     }
-//   }
-//   console.log(result);
-//   return result;
-// }
 
 export function flattenObject(
   obj: Record<string, any>,
